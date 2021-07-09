@@ -48,6 +48,10 @@ public class DecisionFleetManagerConfig {
     @ConfigProperty(name = "baaas.dfm.s3.bucket.name")
     String bucketName;
 
+    @Inject
+    @ConfigProperty(name = "baaas.dfm.max.allowed.decisions")
+    int maxAllowedDecisions = -1; //disabled by default
+
     public String getApiBaseUrl() {
         return apiBaseUrl;
     }
@@ -66,5 +70,13 @@ public class DecisionFleetManagerConfig {
 
     public String getBucketName() {
         return bucketName;
+    }
+
+    public int getMaxAllowedDecisions() {
+        return maxAllowedDecisions;
+    }
+
+    public boolean isDecisionCountWithinLimit(int numOfDecision) {
+        return this.maxAllowedDecisions == -1 || numOfDecision < this.maxAllowedDecisions;
     }
 }
