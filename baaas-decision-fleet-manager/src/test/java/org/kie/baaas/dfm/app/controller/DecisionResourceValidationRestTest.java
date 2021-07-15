@@ -13,60 +13,41 @@
  *
  */
 
-package org.kie.baaas.dfm.app.manager.validation;
+package org.kie.baaas.dfm.app.controller;
 
 import javax.inject.Inject;
+import javax.ws.rs.core.MediaType;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kie.baaas.dfm.api.decisions.DecisionRequest;
 import org.kie.baaas.dfm.api.decisions.Model;
-import org.kie.baaas.dfm.app.dao.DecisionDAO;
-import org.kie.baaas.dfm.app.dao.DecisionVersionDAO;
 import org.kie.baaas.dfm.app.manager.DecisionManager;
+import org.kie.baaas.dfm.app.manager.validators.ValidationTestProfile;
 import org.kie.baaas.dfm.app.model.DecisionVersion;
 import org.kie.baaas.dfm.app.storage.DMNStorageRequest;
 import org.kie.baaas.dfm.app.storage.DecisionDMNStorage;
 import org.kie.baaas.dfm.app.storage.s3.S3DMNStorage;
 import org.mockito.Mockito;
 
-import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+import io.quarkus.test.security.TestSecurity;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static io.restassured.RestAssured.given;
 import static org.kie.baaas.dfm.app.TestConstants.DEFAULT_CUSTOMER_ID;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
 @TestProfile(ValidationTestProfile.class)
-public class DecisionManagerTest {
-
-    @Inject
-    DecisionDAO decisionDAO;
-
-    @Inject
-    DecisionVersionDAO decisionVersionDAO;
-
-    @Inject
-    DecisionManager decisionManager;
-
+public class DecisionResourceValidationRestTest {
     @Inject
     DecisionDMNStorage dmnStorage;
 
-    private DecisionRequest createApiRequest() {
-
-        Model model = new Model();
-        model.setDmn("foo");
-
-        DecisionRequest decisions = new DecisionRequest();
-        decisions.setDescription("The Best Decision Ever");
-        decisions.setName("robs-first-decision");
-        decisions.setModel(model);
-        return decisions;
-    }
+    @Inject
+    DecisionManager decisionManager;
 
     @BeforeAll
     public static void beforeAll() {
@@ -80,16 +61,34 @@ public class DecisionManagerTest {
         return request;
     }
 
-    @TestTransaction
+    private DecisionRequest createApiRequest() {
+        Model model = new Model();
+        model.setDmn("<xml><test>\"hello\"</test></xml>");
+
+        DecisionRequest decisions = new DecisionRequest();
+        decisions.setDescription("The Best Decision Ever");
+        decisions.setName("first-decision");
+        decisions.setModel(model);
+        decisions.setKind("Decision");
+        return decisions;
+    }
+
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     @Test
-    public void newDecision_exceedsDecisionCreationLimit() {
+    void testDecisionRequestValidator_exceedAllowedLimit() {
+        //Max allowed decision is 1 for this test
+
+        //Mock a storage for DMN
         createStorageRequest();
 
+        //creates the first decision
         DecisionRequest apiRequest = createApiRequest();
         decisionManager.createOrUpdateVersion(DEFAULT_CUSTOMER_ID, apiRequest);
 
-        apiRequest.setName("2nd-decision");
-        assertThrows(DecisionRequestValidationException.class, () -> decisionManager.createOrUpdateVersion(DEFAULT_CUSTOMER_ID, apiRequest));
+        //creates 2nd one through HTTP and fails at max allowed limit validator
+        given().when()
+                .contentType(MediaType.APPLICATION_JSON).body(apiRequest)
+                .when().post("/decisions").then().statusCode(400);
     }
 
 }

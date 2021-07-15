@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -30,9 +29,6 @@ import org.kie.baaas.dfm.api.decisions.DecisionRequest;
 import org.kie.baaas.dfm.api.eventing.Eventing;
 import org.kie.baaas.dfm.app.dao.DecisionDAO;
 import org.kie.baaas.dfm.app.dao.DecisionVersionDAO;
-import org.kie.baaas.dfm.app.manager.validation.DecisionRequestValidationException;
-import org.kie.baaas.dfm.app.manager.validation.ValidateParams;
-import org.kie.baaas.dfm.app.manager.validation.Validator;
 import org.kie.baaas.dfm.app.model.Decision;
 import org.kie.baaas.dfm.app.model.DecisionVersion;
 import org.kie.baaas.dfm.app.model.DecisionVersionStatus;
@@ -61,9 +57,6 @@ public class DecisionManager implements DecisionLifecycle {
     private final DecisionVersionDAO decisionVersionDAO;
 
     private final DecisionDMNStorage decisionDMNStorage;
-
-    @Inject
-    private Instance<Validator> validators;
 
     @Inject
     public DecisionManager(DecisionDAO decisionDAO, DecisionVersionDAO decisionVersionDAO, DecisionDMNStorage decisionDMNStorage) {
@@ -201,8 +194,6 @@ public class DecisionManager implements DecisionLifecycle {
     }
 
     private DecisionVersion createDecision(String customerId, DecisionRequest decisionRequest) {
-        validateDecisionRequest(customerId);
-
         Decision decision = new Decision();
         decision.setCustomerId(customerId);
         decision.setName(decisionRequest.getName());
@@ -409,25 +400,5 @@ public class DecisionManager implements DecisionLifecycle {
         decisionDAO.delete(decision);
         LOGGER.info("Deleted Decision with name '{}' and customer id '{}'", decisionNameOrId, customerId);
         return decision;
-    }
-
-    /**
-     * Validates customer and their decision with the defined criteria defined in configuration
-     * The method throws an Runtime exception in case the decision failed to meet the criteria.
-     *
-     * @param customerId - The customer that owns the decision
-     */
-    private void validateDecisionRequest(String customerId) {
-        long decisionCount = decisionDAO.getDecisionCountByCustomerId(customerId);
-        ValidateParams vp = new ValidateParams();
-        vp.setDecisionCount((int) decisionCount);
-
-        if (validators != null) {
-            for (Validator v : validators) {
-                if (!v.validate(vp)) {
-                    throw new DecisionRequestValidationException(v.getErrorMsg());
-                }
-            }
-        }
     }
 }
