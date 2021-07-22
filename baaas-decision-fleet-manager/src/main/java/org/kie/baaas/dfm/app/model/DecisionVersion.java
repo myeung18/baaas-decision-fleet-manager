@@ -64,7 +64,9 @@ import org.kie.baaas.dfm.app.model.eventing.KafkaConfig;
         @NamedQuery(name = "DecisionVersion.buildingByCustomerAndDecisionIdOrName",
                 query = "select dv from DecisionVersion dv left join fetch dv.tags left join fetch dv.configuration join fetch dv.decision where dv.id=dv.decision.nextVersion.id and dv.decision.customerId=:customerId and (dv.decision.id=:idOrName or dv.decision.name=:idOrName)"),
         @NamedQuery(name = "DecisionVersion.byCustomerDecisionIdOrNameAndVersion",
-                query = "select dv from DecisionVersion dv left join fetch dv.tags left join fetch dv.configuration join fetch dv.decision where dv.version=:version and dv.decision.customerId=:customerId and (dv.decision.id=:idOrName or dv.decision.name=:idOrName)")
+                query = "select dv from DecisionVersion dv left join fetch dv.tags left join fetch dv.configuration join fetch dv.decision where dv.version=:version and dv.decision.customerId=:customerId and (dv.decision.id=:idOrName or dv.decision.name=:idOrName)"),
+        @NamedQuery(name = "DecisionVersion.countByNameExcludeDeleted",
+                query = "select count(dv.id) from DecisionVersion dv where dv.status <> 'DELETED' and dv.decision.name=:name"),
 })
 @Entity
 @Table(name = "DECISION_VERSION")

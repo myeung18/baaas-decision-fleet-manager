@@ -55,6 +55,13 @@ public class DecisionVersionDAO implements PanacheRepositoryBase<DecisionVersion
         return find("#DecisionVersion.countByCustomerAndName", params).count() + 1;
     }
 
+    public long getDecisionNameCountExcludeDeleted(String decisionName) {
+        Parameters params = Parameters.with(NAME_PARAM, decisionName);
+        TypedQuery<Long> namedQuery = getEntityManager().createNamedQuery("DecisionVersion.countByNameExcludeDeleted", Long.class);
+        addParamsToNamedQuery(params, namedQuery);
+        return namedQuery.getSingleResult();
+    }
+
     public DecisionVersion getCurrentVersion(String customerId, String decisionIdOrName) {
         Parameters params = customerIdParams(customerId).and(ID_OR_NAME_PARAM, decisionIdOrName);
         return find("#DecisionVersion.currentByCustomerAndDecisionIdOrName", params).firstResult();

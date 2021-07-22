@@ -61,7 +61,7 @@ class DecisionResourceRestTest {
                 .statusCode(400)
                 .extract().body().as(ArrayList.class);
 
-        assertThat(errors, hasSize(3));
+        assertThat(errors, hasSize(4));
         request.setName("example-request");
 
         errors = given()
@@ -151,6 +151,34 @@ class DecisionResourceRestTest {
         assertThat(errors, hasSize(1));
 
         request.getEventing().getKafka().setBootstrapServers("example:9002");
+        given()
+                .when()
+                .body(request)
+                .contentType(MediaType.APPLICATION_JSON)
+                .post("/decisions")
+                .then()
+                .statusCode(201);
+    }
+
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    @Test
+    void testDecisionRequestNameValidation() {
+        DecisionRequest request = new DecisionRequest();
+        request.setName("1example-request");
+        request.setDescription("the description");
+        request.setKind("Decision");
+        List<String> errors = given()
+                .when()
+                .body(request)
+                .contentType(MediaType.APPLICATION_JSON)
+                .post("/decisions")
+                .then()
+                .statusCode(400)
+                .extract().body().as(ArrayList.class);
+
+        assertThat(errors, hasSize(1));
+
+        request.setName("g-example-request");
         given()
                 .when()
                 .body(request)

@@ -21,6 +21,7 @@ import java.util.Collection;
 import org.kie.baaas.dfm.app.config.DecisionFleetManagerConfig;
 import org.kie.baaas.dfm.app.dfs.DecisionFleetShardClient;
 import org.kie.baaas.dfm.app.exceptions.DecisionFleetManagerException;
+import org.kie.baaas.dfm.app.manager.validators.Util;
 import org.kie.baaas.dfm.app.model.Decision;
 import org.kie.baaas.dfm.app.model.DecisionFleetShard;
 import org.kie.baaas.dfm.app.model.DecisionVersion;
@@ -36,7 +37,6 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 
 import static java.util.Collections.singleton;
 
@@ -86,7 +86,7 @@ public class DefaultDecisionFleetShardClient implements DecisionFleetShardClient
         objectMeta.setName(getDecisionRequestName(decisionVersion));
 
         DecisionRequestSpec decisionRequestSpec = new DecisionRequestSpec();
-        decisionRequestSpec.setName(KubernetesResourceUtil.sanitizeName(decisionVersion.getDecision().getName()).toLowerCase());
+        decisionRequestSpec.setName(Util.sanitizeName(decisionVersion.getDecision().getName()));
         decisionRequestSpec.setSource(URI.create(decisionVersion.getDmnLocation()));
         decisionRequestSpec.setVersion(String.valueOf(decisionVersion.getVersion()));
         decisionRequestSpec.setCustomerId(decisionVersion.getDecision().getCustomerId());

@@ -85,7 +85,7 @@ public class DefaultDecisionDecisionFleetShardClientTest {
     private DecisionVersion createDecisionVersion(boolean addKafka) {
 
         Decision decision = new Decision();
-        decision.setName("my first decision");
+        decision.setName("my-first-decision");
         decision.setCustomerId(DEFAULT_CUSTOMER_ID);
 
         DecisionVersion decisionVersion = new DecisionVersion();
@@ -148,7 +148,7 @@ public class DefaultDecisionDecisionFleetShardClientTest {
 
         FleetShardResponseBuilder<DecisionRequest> responseBuilder = expectDecisionRequest();
         DecisionVersion decisionVersion = createDecisionVersion(false);
-        decisionVersion.getDecision().setName("My-Decision");
+        decisionVersion.getDecision().setName("my-decision");
 
         client.deploy(decisionVersion);
 
@@ -157,7 +157,7 @@ public class DefaultDecisionDecisionFleetShardClientTest {
 
         assertThat(payload.getMetadata().getName(), equalTo(DEFAULT_CUSTOMER_ID + "-" + decisionVersion.getDecision().getId() + "-1"));
         assertThat(payload.getSpec().getCustomerId(), equalTo(DEFAULT_CUSTOMER_ID));
-        assertThat(payload.getSpec().getName(), equalTo(KubernetesResourceUtil.sanitizeName(decisionVersion.getDecision().getName()).toLowerCase()));
+        assertThat(payload.getSpec().getName(), equalTo(decisionVersion.getDecision().getName()));
 
         assertThat(payload.getSpec().getVersion(), equalTo(String.valueOf(decisionVersion.getVersion())));
         assertThat(payload.getSpec().getSource(), equalTo(URI.create(decisionVersion.getDmnLocation())));

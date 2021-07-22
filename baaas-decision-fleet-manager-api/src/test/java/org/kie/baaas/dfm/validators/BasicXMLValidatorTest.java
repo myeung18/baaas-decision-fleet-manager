@@ -51,7 +51,7 @@ class BasicXMLValidatorTest {
     void createBasePayload() {
         myDecision = new DecisionRequest();
         myDecision.setKind("Decision");
-        myDecision.setName("Quarkus Test");
+        myDecision.setName("quarkus-test");
         myDecision.setDescription("some test");
         myDecision.setModel(new Model());
     }
