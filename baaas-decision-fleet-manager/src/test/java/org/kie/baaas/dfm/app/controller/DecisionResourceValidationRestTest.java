@@ -22,9 +22,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kie.baaas.dfm.api.decisions.DecisionRequest;
 import org.kie.baaas.dfm.api.decisions.Model;
+import org.kie.baaas.dfm.app.manager.DecisionLifecycleOrchestrator;
 import org.kie.baaas.dfm.app.manager.DecisionManager;
 import org.kie.baaas.dfm.app.manager.validators.ValidationTestProfile;
 import org.kie.baaas.dfm.app.model.DecisionVersion;
+import org.kie.baaas.dfm.app.resolvers.CustomerIdResolver;
 import org.kie.baaas.dfm.app.storage.DMNStorageRequest;
 import org.kie.baaas.dfm.app.storage.DecisionDMNStorage;
 import org.kie.baaas.dfm.app.storage.s3.S3DMNStorage;
@@ -48,6 +50,12 @@ public class DecisionResourceValidationRestTest {
 
     @Inject
     DecisionManager decisionManager;
+
+    @Inject
+    CustomerIdResolver customerIdResolver;
+
+    @Inject
+    DecisionLifecycleOrchestrator decisionLifecycle;
 
     @BeforeAll
     public static void beforeAll() {

@@ -42,8 +42,9 @@ public class DecisionDAO implements PanacheRepositoryBase<Decision, String> {
     }
 
     public long getDecisionCountByCustomerId(String customerId) {
-        Parameters params = Parameters.with("customerId", customerId);
         TypedQuery<Long> namedQuery = getEntityManager().createNamedQuery("Decision.decisionCountByCustomerId", Long.class);
+        Parameters params = Parameters.with("customerId", customerId);
+        params.map().forEach((key, val) -> namedQuery.setParameter(key, val.toString()));
         return namedQuery.getSingleResult();
     }
 }
